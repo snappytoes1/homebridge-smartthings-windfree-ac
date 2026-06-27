@@ -1,0 +1,16 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+This project uses npm package versions and GitHub release tags.
+
+## 0.1.0 - Unreleased
+
+- Initial clean Homebridge dynamic platform plugin for SmartThings WindFree AC devices.
+- Added OAuth2 authorization-code setup with refresh token support.
+- Added temporary PAT authentication.
+- Added custom Homebridge UI for setup, OAuth token exchange, device discovery, optional services, and debug logging.
+- Added SmartThings device discovery across all components and capabilities.
+- Added Thermostat support for power, AC mode, current temperature, and cooling setpoint.
+- Added optional HomeKit controls for WindFree, Display, Auto Clean, Swing, and Fan.
+- Added secret masking, timeout/retry behavior, unit tests, CI, release workflow, and package dry-run validation.

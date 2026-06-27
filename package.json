@@ -2,7 +2,7 @@
   "displayName": "SmartThings WindFree AC",
   "name": "homebridge-smartthings-windfree-ac",
   "version": "0.1.0",
-  "description": "Homebridge dynamic platform plugin for Samsung WindFree air conditioners through the SmartThings API.",
+  "description": "Homebridge plugin for Samsung WindFree air conditioners via SmartThings with OAuth2 setup, discovery, and optional HomeKit controls.",
   "license": "Apache-2.0",
   "private": false,
   "author": "snappytoes1",
