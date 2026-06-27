@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 This project uses npm package versions and GitHub release tags.
 
-## 0.1.0 - Unreleased
+## 0.1.0-beta.1 - 2026-06-27
 
 - Initial clean Homebridge dynamic platform plugin for SmartThings WindFree AC devices.
 - Added OAuth2 authorization-code setup with refresh token support.
