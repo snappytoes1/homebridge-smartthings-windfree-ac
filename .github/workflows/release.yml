@@ -43,7 +43,7 @@ jobs:
 
       - name: Check release tag matches package version
         if: github.event_name == 'release'
-        run: node -e "const version = require('./package.json').version; const tag = process.env.GITHUB_REF_NAME.replace(/^v/, ''); if (version !== tag) { throw new Error(`package.json version ${version} does not match release tag ${process.env.GITHUB_REF_NAME}`); }"
+        run: node -e 'const version = require("./package.json").version; const tag = process.env.GITHUB_REF_NAME.replace(/^v/, ""); if (version !== tag) { throw new Error("package.json version " + version + " does not match release tag " + process.env.GITHUB_REF_NAME); }'
 
       - name: Resolve npm dist-tag
         id: dist_tag

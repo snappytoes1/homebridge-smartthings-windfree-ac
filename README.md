@@ -38,7 +38,7 @@ Catalog readiness checklist:
 - keep `config.schema.json` in the npm package;
 - create a GitHub release for every npm release.
 
-Homebridge Verified is a separate manual review. After the first live-tested npm release, request verification in the Homebridge plugin registry repository and include the npm package name, GitHub repository, release version, and evidence that CI passes on Node.js 22 and 24.
+Homebridge Verified is a separate manual review. After the first live-tested npm release, request verification in the [Homebridge plugin registry](https://github.com/homebridge/plugins) and include the npm package name, GitHub repository, release version, and evidence that CI passes on Node.js 22 and 24.
 
 ## Homebridge Config
 
