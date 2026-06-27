@@ -13,6 +13,7 @@ import {
   rotationSpeedToFanMode,
   smartThingsModeToTargetState,
   smartThingsStatusToCurrentState,
+  supportedFanModesFromStatus,
   targetStateToCommands,
 } from './mappings.js';
 import { errorMessage } from './secrets.js';
@@ -241,10 +242,29 @@ export class SmartThingsWindFreeAccessory {
   }
 
   private async handleFanRotationSpeedSet(value: CharacteristicValue): Promise<void> {
+    const status = await this.getDeviceStatus();
+    const switchState = getStatusValue(status, 'switch', 'switch');
+    const acMode = getStatusValue(status, 'airConditionerMode', 'airConditionerMode');
+    if (switchState === 'off') {
+      this.platform.log.warn('Fan mode is not sent while the AC is off. Turn Fan Active on first.');
+      return;
+    }
+
+    if (acMode === 'auto') {
+      this.platform.log.warn('Fan mode is not supported while the AC is in auto mode.');
+      return;
+    }
+
+    const fanMode = rotationSpeedToFanMode(Number(value), supportedFanModesFromStatus(status));
+    if (!fanMode) {
+      this.platform.log.warn(`Fan mode is not supported by ${this.device.label ?? this.device.deviceId}.`);
+      return;
+    }
+
     await this.executeSafely('set fan mode', () => this.client.executeCommand(this.device.deviceId, {
       capability: 'airConditionerFanMode',
       command: 'setFanMode',
-      arguments: [rotationSpeedToFanMode(Number(value))],
+      arguments: [fanMode],
     }));
   }
 

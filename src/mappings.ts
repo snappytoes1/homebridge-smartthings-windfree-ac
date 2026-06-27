@@ -24,7 +24,7 @@ export const enum SmartThingsSwitch {
 }
 
 export type SmartThingsAcMode = 'auto' | 'cool' | 'dry' | 'heat' | 'wind';
-export type SmartThingsFanMode = 'auto' | 'low' | 'medium' | 'high' | 'turbo';
+export type SmartThingsFanMode = 'auto' | 'low' | 'medium' | 'mid' | 'high' | 'turbo';
 
 export const MIN_COOLING_SETPOINT = 16;
 export const MAX_COOLING_SETPOINT = 30;
@@ -101,6 +101,7 @@ export function fanModeToRotationSpeed(mode: unknown): number {
     case 'low':
       return 33;
     case 'medium':
+    case 'mid':
       return 66;
     case 'high':
     case 'turbo':
@@ -111,20 +112,60 @@ export function fanModeToRotationSpeed(mode: unknown): number {
   }
 }
 
-export function rotationSpeedToFanMode(speed: number): SmartThingsFanMode {
+export function rotationSpeedToFanMode(speed: number, supportedModes?: readonly SmartThingsFanMode[]): SmartThingsFanMode | undefined {
+  const preferredModes = fanModePreferences(speed);
+
+  if (supportedModes === undefined) {
+    return preferredModes[0];
+  }
+
+  for (const mode of preferredModes) {
+    if (supportedModes.includes(mode)) {
+      return mode;
+    }
+  }
+
+  return undefined;
+}
+
+export function supportedFanModesFromStatus(status: SmartThingsDeviceStatus): SmartThingsFanMode[] | undefined {
+  const value = getStatusValue(status, 'airConditionerFanMode', 'supportedAcFanModes')
+    ?? getStatusValue(status, 'airConditionerFanMode', 'supportedFanModes');
+
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.filter(isSmartThingsFanMode);
+}
+
+function fanModePreferences(speed: number): SmartThingsFanMode[] {
   if (speed <= 0) {
-    return 'auto';
+    return ['auto', 'low', 'medium', 'mid', 'high', 'turbo'];
   }
 
   if (speed <= 40) {
-    return 'low';
+    return ['low', 'medium', 'mid', 'auto', 'high', 'turbo'];
   }
 
   if (speed <= 75) {
-    return 'medium';
+    return ['medium', 'mid', 'high', 'low', 'auto', 'turbo'];
   }
 
-  return 'high';
+  return ['high', 'turbo', 'medium', 'mid', 'low', 'auto'];
+}
+
+function isSmartThingsFanMode(value: unknown): value is SmartThingsFanMode {
+  return value === 'auto'
+    || value === 'low'
+    || value === 'medium'
+    || value === 'mid'
+    || value === 'high'
+    || value === 'turbo';
 }
 
 export function normalizeCoolingSetpoint(value: unknown, fallback = 24): number {

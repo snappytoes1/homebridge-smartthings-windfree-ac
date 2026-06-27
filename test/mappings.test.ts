@@ -10,6 +10,7 @@ import {
   rotationSpeedToFanMode,
   smartThingsModeToTargetState,
   smartThingsStatusToCurrentState,
+  supportedFanModesFromStatus,
   targetStateToCommands,
 } from '../src/mappings.js';
 import { thermostatStatus } from './fixtures.js';
@@ -42,10 +43,31 @@ describe('mode mappings', () => {
 
   it('maps fan modes and rotation speed', () => {
     expect(fanModeToRotationSpeed('medium')).toBe(66);
+    expect(fanModeToRotationSpeed('mid')).toBe(66);
     expect(rotationSpeedToFanMode(0)).toBe('auto');
     expect(rotationSpeedToFanMode(35)).toBe('low');
     expect(rotationSpeedToFanMode(70)).toBe('medium');
     expect(rotationSpeedToFanMode(100)).toBe('high');
+  });
+
+  it('uses supported SmartThings fan modes when choosing rotation speed commands', () => {
+    expect(rotationSpeedToFanMode(70, ['auto', 'low', 'mid', 'high'])).toBe('mid');
+    expect(rotationSpeedToFanMode(100, ['auto', 'low', 'mid', 'turbo'])).toBe('turbo');
+    expect(rotationSpeedToFanMode(35, [])).toBeUndefined();
+  });
+
+  it('reads supported fan modes from SmartThings status', () => {
+    expect(supportedFanModesFromStatus({
+      components: {
+        main: {
+          airConditionerFanMode: {
+            supportedAcFanModes: {
+              value: ['auto', 'low', 'mid', 'high', 'unsupported'],
+            },
+          },
+        },
+      },
+    })).toEqual(['auto', 'low', 'mid', 'high']);
   });
 
   it('keeps SmartThings cooling setpoints inside the HomeKit target temperature range', () => {

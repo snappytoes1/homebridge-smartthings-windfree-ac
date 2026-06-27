@@ -17,3 +17,5 @@ This project uses npm package versions and GitHub release tags.
 - Clamped SmartThings cooling setpoint reads to the HomeKit target temperature range.
 - Queued SmartThings device commands and added bounded retry/backoff for `429 Too Many Requests` responses.
 - Coalesced SmartThings status reads with a short cache to avoid startup `GET /status` rate limits.
+- Respected supported SmartThings AC fan modes and skipped invalid fan-mode writes in off/auto states.
+- Added structured package author metadata for Homebridge UI plugin cards.

@@ -5,7 +5,10 @@
   "description": "Homebridge plugin for Samsung WindFree air conditioners via SmartThings with OAuth2 setup, discovery, and optional HomeKit controls.",
   "license": "Apache-2.0",
   "private": false,
-  "author": "snappytoes1",
+  "author": {
+    "name": "snappytoes1",
+    "url": "https://github.com/snappytoes1"
+  },
   "homepage": "https://github.com/snappytoes1/homebridge-smartthings-windfree-ac#readme",
   "repository": {
     "type": "git",
