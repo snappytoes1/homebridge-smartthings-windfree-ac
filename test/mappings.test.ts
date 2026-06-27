@@ -6,6 +6,7 @@ import {
   displayLightCommand,
   fanModeToRotationSpeed,
   getStatusValue,
+  normalizeCoolingSetpoint,
   rotationSpeedToFanMode,
   smartThingsModeToTargetState,
   smartThingsStatusToCurrentState,
@@ -45,6 +46,13 @@ describe('mode mappings', () => {
     expect(rotationSpeedToFanMode(35)).toBe('low');
     expect(rotationSpeedToFanMode(70)).toBe('medium');
     expect(rotationSpeedToFanMode(100)).toBe('high');
+  });
+
+  it('keeps SmartThings cooling setpoints inside the HomeKit target temperature range', () => {
+    expect(normalizeCoolingSetpoint(10)).toBe(16);
+    expect(normalizeCoolingSetpoint(24)).toBe(24);
+    expect(normalizeCoolingSetpoint(35)).toBe(30);
+    expect(normalizeCoolingSetpoint(undefined)).toBe(24);
   });
 
   it('builds Samsung display command without exposing secrets', () => {

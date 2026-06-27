@@ -3,10 +3,13 @@ import type { CharacteristicValue, PlatformAccessory, Service } from 'homebridge
 import { enabledOptionalCapabilities } from './capabilities.js';
 import {
   HomeKitActive,
+  MAX_COOLING_SETPOINT,
+  MIN_COOLING_SETPOINT,
   displayLightCommand,
   fanModeToRotationSpeed,
   getStatusValue,
   isOnLike,
+  normalizeCoolingSetpoint,
   rotationSpeedToFanMode,
   smartThingsModeToTargetState,
   smartThingsStatusToCurrentState,
@@ -67,7 +70,7 @@ export class SmartThingsWindFreeAccessory {
       .onGet(this.handleCurrentTemperatureGet.bind(this));
 
     this.thermostatService.getCharacteristic(this.platform.Characteristic.TargetTemperature)
-      .setProps({ minValue: 16, maxValue: 30, minStep: 1 })
+      .setProps({ minValue: MIN_COOLING_SETPOINT, maxValue: MAX_COOLING_SETPOINT, minStep: 1 })
       .onGet(this.handleTargetTemperatureGet.bind(this))
       .onSet(this.handleTargetTemperatureSet.bind(this));
   }
@@ -153,7 +156,7 @@ export class SmartThingsWindFreeAccessory {
 
   private async handleTargetTemperatureGet(): Promise<CharacteristicValue> {
     const status = await this.getDeviceStatus();
-    return numberOrDefault(getStatusValue(status, 'thermostatCoolingSetpoint', 'coolingSetpoint'), 24);
+    return normalizeCoolingSetpoint(getStatusValue(status, 'thermostatCoolingSetpoint', 'coolingSetpoint'));
   }
 
   private async handleTargetTemperatureSet(value: CharacteristicValue): Promise<void> {

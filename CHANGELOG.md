@@ -14,3 +14,4 @@ This project uses npm package versions and GitHub release tags.
 - Added Thermostat support for power, AC mode, current temperature, and cooling setpoint.
 - Added optional HomeKit controls for WindFree, Display, Auto Clean, Swing, and Fan.
 - Added secret masking, timeout/retry behavior, unit tests, CI, release workflow, and package dry-run validation.
+- Clamped SmartThings cooling setpoint reads to the HomeKit target temperature range.

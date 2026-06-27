@@ -26,6 +26,9 @@ export const enum SmartThingsSwitch {
 export type SmartThingsAcMode = 'auto' | 'cool' | 'dry' | 'heat' | 'wind';
 export type SmartThingsFanMode = 'auto' | 'low' | 'medium' | 'high' | 'turbo';
 
+export const MIN_COOLING_SETPOINT = 16;
+export const MAX_COOLING_SETPOINT = 30;
+
 export function targetStateToCommands(value: number): SmartThingsCommand[] {
   const mode = isHomeKitTargetState(value) ? targetStateToSmartThingsMode(value) : undefined;
 
@@ -122,6 +125,11 @@ export function rotationSpeedToFanMode(speed: number): SmartThingsFanMode {
   }
 
   return 'high';
+}
+
+export function normalizeCoolingSetpoint(value: unknown, fallback = 24): number {
+  const setpoint = typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+  return Math.min(MAX_COOLING_SETPOINT, Math.max(MIN_COOLING_SETPOINT, setpoint));
 }
 
 export function isOnLike(value: unknown): boolean {
