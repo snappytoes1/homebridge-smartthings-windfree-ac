@@ -1,0 +1,54 @@
+name: Bug report
+description: Report a problem with SmartThings WindFree AC behavior.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not paste SmartThings tokens, client secrets, authorization codes, refresh tokens, or full Homebridge config files.
+  - type: input
+    id: version
+    attributes:
+      label: Plugin version
+      placeholder: 0.1.0
+    validations:
+      required: true
+  - type: input
+    id: homebridge
+    attributes:
+      label: Homebridge and Node.js versions
+      placeholder: Homebridge 2.1.0, Node 24.x
+    validations:
+      required: true
+  - type: input
+    id: model
+    attributes:
+      label: Samsung AC model
+      placeholder: TP2X_RAC_20K
+    validations:
+      required: false
+  - type: dropdown
+    id: auth
+    attributes:
+      label: Auth method
+      options:
+        - OAuth2
+        - Personal Access Token
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: What happened?
+      description: Include sanitized logs with tokens removed.
+    validations:
+      required: true
+  - type: textarea
+    id: capabilities
+    attributes:
+      label: Device capabilities from logs
+      description: Paste sanitized `Capabilities found` and `Missing capabilities` lines if relevant.
+    validations:
+      required: false

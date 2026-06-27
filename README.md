@@ -6,7 +6,7 @@ This is a clean project with a new package name, platform alias, config shape, a
 
 ## Requirements
 
-- Homebridge with Node.js 22 or newer.
+- Homebridge with Node.js 22 or 24.
 - Samsung WindFree AC paired with SmartThings.
 - SmartThings OAuth app credentials or a temporary Personal Access Token.
 
@@ -25,6 +25,20 @@ npm install -g github:snappytoes1/homebridge-smartthings-windfree-ac#main
 ```
 
 The package builds `dist` during GitHub installs through the `prepare` script.
+
+## Homebridge Plugin Catalog
+
+After the first npm publish, the plugin can appear in the Homebridge UI plugin search because the package is public and includes the `homebridge-plugin` npm keyword.
+
+Catalog readiness checklist:
+
+- publish `homebridge-smartthings-windfree-ac` to npm;
+- keep the package public and unscoped;
+- keep the `homebridge-plugin` keyword in `package.json`;
+- keep `config.schema.json` in the npm package;
+- create a GitHub release for every npm release.
+
+Homebridge Verified is a separate manual review. After the first live-tested npm release, request verification in the Homebridge plugin registry repository and include the npm package name, GitHub repository, release version, and evidence that CI passes on Node.js 22 and 24.
 
 ## Homebridge Config
 
@@ -142,5 +156,17 @@ npm ci
 npm run lint
 npm run build
 npm test
-npm_config_cache=/private/tmp/npm-cache-samsung-windfree npm pack --dry-run
+npm run pack:dry-run
 ```
+
+Use `npm run verify` to run lint, build, tests, and package dry-run together.
+
+## Release
+
+1. Run `npm run verify`.
+2. Update `package.json` version.
+3. Merge to `main`.
+4. Create a GitHub release tag matching the package version, for example `v0.1.0-beta.1`.
+5. The `Publish` workflow publishes prereleases with npm tag `beta` and stable releases with npm tag `latest`.
+
+The publish workflow requires an `NPM_TOKEN` repository secret with permission to publish `homebridge-smartthings-windfree-ac`.
