@@ -2,7 +2,7 @@
 
 Modern Homebridge dynamic platform plugin for Samsung WindFree air conditioners connected through the SmartThings API.
 
-The plugin is built as a clean project, not a compatibility fork. It uses the new `SmartThingsWindFreeAC` platform alias, OAuth2-first setup, a custom Homebridge UI, SmartThings device discovery, and optional HomeKit controls for WindFree-specific features. Legacy config keys and the old platform name are intentionally unsupported.
+The plugin is built as a clean project, not a compatibility fork. It uses the new `SmartThingsWindFreeAC` platform alias, OAuth2-first setup, a custom Homebridge UI, SmartThings device discovery, and optional HomeKit controls for Samsung-specific features. Legacy config keys and the old platform name are intentionally unsupported.
 
 ## Status
 
@@ -16,7 +16,8 @@ This project is pre-1.0. Automated tests use SmartThings fixtures and mocks; rea
 - Custom Homebridge UI for credentials, OAuth token exchange, device discovery, device selection, optional services, and debug logging.
 - SmartThings discovery across all device components and capabilities.
 - HomeKit Thermostat service for power, mode, current temperature, and target cooling setpoint.
-- Optional HomeKit services for WindFree, Display, Auto Clean, Swing, and Fan when the SmartThings device exposes the matching capabilities.
+- Optional HomeKit services for Display, Auto Clean, Swing, and Fan when the SmartThings device exposes the matching capabilities.
+- WindFree can be controlled through HomeKit Fan speed `0%` when both WindFree and Fan capabilities are available.
 - Bounded SmartThings API timeout/retry behavior and secret-safe logs.
 
 ## Requirements
@@ -139,7 +140,7 @@ Use PAT auth to separate OAuth problems from device capability problems. Revoke 
 | `accessToken` | PAT | none | SmartThings Personal Access Token. |
 | `deviceId` | no | none | Exact SmartThings device ID. Highest-priority filter. |
 | `deviceLabel` | no | none | Exact SmartThings device label or name. Used only when `deviceId` is not set. |
-| `exposeWindFree` | no | `true` | Expose WindFree switch if the device supports it. |
+| `exposeWindFree` | no | `true` | Enable WindFree through HomeKit Fan speed `0%` if the device supports it. No separate WindFree switch is exposed. |
 | `exposeDisplay` | no | `true` | Expose Display switch if the device supports it. |
 | `exposeAutoClean` | no | `true` | Expose Auto Clean switch if the device supports it. |
 | `exposeSwing` | no | `true` | Expose Swing switch if the device supports it. |
@@ -162,7 +163,7 @@ Optional capabilities:
 
 | HomeKit control | SmartThings capability |
 | --- | --- |
-| WindFree switch | `custom.airConditionerOptionalMode` |
+| WindFree through Fan speed `0%` | `custom.airConditionerOptionalMode` |
 | Display switch | `samsungce.airConditionerLighting` |
 | Auto Clean switch | `custom.autoCleaningMode` |
 | Swing switch | `fanOscillationMode` |
@@ -190,14 +191,16 @@ The main HomeKit service is Thermostat.
 | Current Temperature | `temperatureMeasurement.temperature`, with a safe fallback if SmartThings omits it |
 | Target Temperature | `thermostatCoolingSetpoint.coolingSetpoint` |
 
-Fan speed maps to SmartThings fan modes:
+Fan speed maps to WindFree and SmartThings fan modes:
 
-| HomeKit rotation speed | SmartThings fan mode |
+| HomeKit rotation speed | SmartThings action |
 | --- | --- |
-| `0` | `auto` |
-| `1-40` | `low` |
-| `41-75` | `medium` |
-| `76-100` | `high` |
+| `0` | `custom.airConditionerOptionalMode.setAcOptionalMode("windFree")` |
+| `1-33` | `airConditionerFanMode.setFanMode("low")` |
+| `34-66` | `airConditionerFanMode.setFanMode("medium")` or the nearest supported equivalent |
+| `67-100` | `airConditionerFanMode.setFanMode("high")` or the nearest supported equivalent |
+
+`Fan Active` off still turns the AC off. Setting rotation speed to `0%` never powers the AC off. If the AC is in SmartThings `auto` mode, WindFree and manual fan-mode writes are skipped with a warning because Samsung commonly rejects those commands in auto mode.
 
 ## Logs and Troubleshooting
 

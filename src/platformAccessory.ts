@@ -10,11 +10,12 @@ import {
   getStatusValue,
   isOnLike,
   normalizeCoolingSetpoint,
-  rotationSpeedToFanMode,
+  rotationSpeedToFanModeOrWindFree,
   smartThingsModeToTargetState,
   smartThingsStatusToCurrentState,
   supportedFanModesFromStatus,
   targetStateToCommands,
+  windFreeCommand,
 } from './mappings.js';
 import { errorMessage } from './secrets.js';
 import type { SmartThingsClient } from './smartthings/client.js';
@@ -25,6 +26,7 @@ export class SmartThingsWindFreeAccessory {
   private readonly device: SmartThingsDevice;
   private lastStatus?: SmartThingsDeviceStatus;
   private readonly thermostatService: Service;
+  private windFreeFanControlEnabled = false;
 
   public constructor(
     private readonly platform: SmartThingsWindFreePlatform,
@@ -78,8 +80,9 @@ export class SmartThingsWindFreeAccessory {
 
   private configureOptionalServices(): void {
     const enabled = enabledOptionalCapabilities(this.platform.config, this.capabilities);
+    this.windFreeFanControlEnabled = enabled.windFree && enabled.fan;
 
-    this.syncSwitchService('WindFree', `windfree-${this.device.deviceId}`, enabled.windFree, this.handleWindFreeGet.bind(this), this.handleWindFreeSet.bind(this));
+    this.removeSwitchService('WindFree', `windfree-${this.device.deviceId}`, 'WindFree is controlled through Fan speed 0%.');
     this.syncSwitchService('Display', `display-${this.device.deviceId}`, enabled.display, this.handleDisplayGet.bind(this), this.handleDisplaySet.bind(this));
     this.syncSwitchService('Auto Clean', `autoclean-${this.device.deviceId}`, enabled.autoClean, this.handleAutoCleanGet.bind(this), this.handleAutoCleanSet.bind(this));
     this.syncSwitchService('Swing', `swing-${this.device.deviceId}`, enabled.swing, this.handleSwingGet.bind(this), this.handleSwingSet.bind(this));
@@ -108,6 +111,16 @@ export class SmartThingsWindFreeAccessory {
     service.getCharacteristic(this.platform.Characteristic.On)
       .onGet(onGet)
       .onSet(onSet);
+  }
+
+  private removeSwitchService(name: string, subtype: string, reason: string): void {
+    const existing = this.accessory.getServiceById(this.platform.Service.Switch, subtype);
+    if (!existing) {
+      return;
+    }
+
+    this.platform.log.info(`Removing optional service ${name}: ${reason}`);
+    this.accessory.removeService(existing);
   }
 
   private syncFanService(enabled: boolean): void {
@@ -168,26 +181,6 @@ export class SmartThingsWindFreeAccessory {
     }));
   }
 
-  private async handleWindFreeGet(): Promise<CharacteristicValue> {
-    const status = await this.getDeviceStatus();
-    return getStatusValue(status, 'custom.airConditionerOptionalMode', 'acOptionalMode') === 'windFree';
-  }
-
-  private async handleWindFreeSet(value: CharacteristicValue): Promise<void> {
-    const status = await this.getDeviceStatus();
-    const mode = getStatusValue(status, 'airConditionerMode', 'airConditionerMode');
-    if (mode === 'auto') {
-      this.platform.log.warn('WindFree mode is not supported while the AC is in auto mode.');
-      return;
-    }
-
-    await this.executeSafely('set WindFree mode', () => this.client.executeCommand(this.device.deviceId, {
-      capability: 'custom.airConditionerOptionalMode',
-      command: 'setAcOptionalMode',
-      arguments: [value ? 'windFree' : 'off'],
-    }));
-  }
-
   private async handleDisplayGet(): Promise<CharacteristicValue> {
     const status = await this.getDeviceStatus();
     return isOnLike(getStatusValue(status, 'samsungce.airConditionerLighting', 'lighting'));
@@ -238,6 +231,10 @@ export class SmartThingsWindFreeAccessory {
 
   private async handleFanRotationSpeedGet(): Promise<CharacteristicValue> {
     const status = await this.getDeviceStatus();
+    if (this.windFreeFanControlEnabled && getStatusValue(status, 'custom.airConditionerOptionalMode', 'acOptionalMode') === 'windFree') {
+      return 0;
+    }
+
     return fanModeToRotationSpeed(getStatusValue(status, 'airConditionerFanMode', 'fanMode'));
   }
 
@@ -255,17 +252,33 @@ export class SmartThingsWindFreeAccessory {
       return;
     }
 
-    const fanMode = rotationSpeedToFanMode(Number(value), supportedFanModesFromStatus(status));
-    if (!fanMode) {
+    const fanModeOrWindFree = rotationSpeedToFanModeOrWindFree(Number(value), supportedFanModesFromStatus(status));
+    if (!fanModeOrWindFree) {
       this.platform.log.warn(`Fan mode is not supported by ${this.device.label ?? this.device.deviceId}.`);
       return;
     }
 
-    await this.executeSafely('set fan mode', () => this.client.executeCommand(this.device.deviceId, {
-      capability: 'airConditionerFanMode',
-      command: 'setFanMode',
-      arguments: [fanMode],
-    }));
+    if (fanModeOrWindFree === 'windFree') {
+      if (!this.windFreeFanControlEnabled) {
+        this.platform.log.warn(`WindFree fan speed is not supported by ${this.device.label ?? this.device.deviceId}.`);
+        return;
+      }
+
+      await this.executeSafely('set WindFree mode', () => this.client.executeCommand(this.device.deviceId, windFreeCommand(true)));
+      return;
+    }
+
+    await this.executeSafely('set fan mode', async () => {
+      if (this.windFreeFanControlEnabled && getStatusValue(status, 'custom.airConditionerOptionalMode', 'acOptionalMode') === 'windFree') {
+        await this.client.executeCommand(this.device.deviceId, windFreeCommand(false));
+      }
+
+      await this.client.executeCommand(this.device.deviceId, {
+        capability: 'airConditionerFanMode',
+        command: 'setFanMode',
+        arguments: [fanModeOrWindFree],
+      });
+    });
   }
 
   private async getDeviceStatus(): Promise<SmartThingsDeviceStatus> {

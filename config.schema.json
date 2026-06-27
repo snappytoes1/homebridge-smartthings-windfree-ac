@@ -80,7 +80,8 @@
         "required": false
       },
       "exposeWindFree": {
-        "title": "Expose WindFree",
+        "title": "WindFree at Fan Speed 0%",
+        "description": "Map HomeKit Fan RotationSpeed 0% to Samsung WindFree mode instead of exposing a separate WindFree switch.",
         "type": "boolean",
         "required": false,
         "default": true

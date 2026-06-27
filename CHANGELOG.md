@@ -19,3 +19,4 @@ This project uses npm package versions and GitHub release tags.
 - Coalesced SmartThings status reads with a short cache to avoid startup `GET /status` rate limits.
 - Respected supported SmartThings AC fan modes and skipped invalid fan-mode writes in off/auto states.
 - Added structured package author metadata for Homebridge UI plugin cards.
+- Replaced the separate WindFree switch with deliberate HomeKit Fan speed `0%` WindFree control.

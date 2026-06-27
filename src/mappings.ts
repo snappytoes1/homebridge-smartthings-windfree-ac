@@ -25,6 +25,7 @@ export const enum SmartThingsSwitch {
 
 export type SmartThingsAcMode = 'auto' | 'cool' | 'dry' | 'heat' | 'wind';
 export type SmartThingsFanMode = 'auto' | 'low' | 'medium' | 'mid' | 'high' | 'turbo';
+export type SmartThingsFanModeOrWindFree = SmartThingsFanMode | 'windFree';
 
 export const MIN_COOLING_SETPOINT = 16;
 export const MAX_COOLING_SETPOINT = 30;
@@ -108,7 +109,7 @@ export function fanModeToRotationSpeed(mode: unknown): number {
       return 100;
     case 'auto':
     default:
-      return 0;
+      return 1;
   }
 }
 
@@ -128,6 +129,14 @@ export function rotationSpeedToFanMode(speed: number, supportedModes?: readonly 
   return undefined;
 }
 
+export function rotationSpeedToFanModeOrWindFree(speed: number, supportedModes?: readonly SmartThingsFanMode[]): SmartThingsFanModeOrWindFree | undefined {
+  if (speed <= 0) {
+    return 'windFree';
+  }
+
+  return rotationSpeedToFanMode(speed, supportedModes);
+}
+
 export function supportedFanModesFromStatus(status: SmartThingsDeviceStatus): SmartThingsFanMode[] | undefined {
   const value = getStatusValue(status, 'airConditionerFanMode', 'supportedAcFanModes')
     ?? getStatusValue(status, 'airConditionerFanMode', 'supportedFanModes');
@@ -144,15 +153,11 @@ export function supportedFanModesFromStatus(status: SmartThingsDeviceStatus): Sm
 }
 
 function fanModePreferences(speed: number): SmartThingsFanMode[] {
-  if (speed <= 0) {
-    return ['auto', 'low', 'medium', 'mid', 'high', 'turbo'];
-  }
-
-  if (speed <= 40) {
+  if (speed <= 33) {
     return ['low', 'medium', 'mid', 'auto', 'high', 'turbo'];
   }
 
-  if (speed <= 75) {
+  if (speed <= 66) {
     return ['medium', 'mid', 'high', 'low', 'auto', 'turbo'];
   }
 
@@ -203,5 +208,13 @@ export function displayLightCommand(on: boolean): SmartThingsCommand {
         'x.com.samsung.da.options': [on ? 'Light_On' : 'Light_Off'],
       },
     ],
+  };
+}
+
+export function windFreeCommand(on: boolean): SmartThingsCommand {
+  return {
+    capability: 'custom.airConditionerOptionalMode',
+    command: 'setAcOptionalMode',
+    arguments: [on ? 'windFree' : 'off'],
   };
 }

@@ -8,6 +8,7 @@ import {
   getStatusValue,
   normalizeCoolingSetpoint,
   rotationSpeedToFanMode,
+  rotationSpeedToFanModeOrWindFree,
   smartThingsModeToTargetState,
   smartThingsStatusToCurrentState,
   supportedFanModesFromStatus,
@@ -44,14 +45,22 @@ describe('mode mappings', () => {
   it('maps fan modes and rotation speed', () => {
     expect(fanModeToRotationSpeed('medium')).toBe(66);
     expect(fanModeToRotationSpeed('mid')).toBe(66);
-    expect(rotationSpeedToFanMode(0)).toBe('auto');
-    expect(rotationSpeedToFanMode(35)).toBe('low');
-    expect(rotationSpeedToFanMode(70)).toBe('medium');
+    expect(fanModeToRotationSpeed('auto')).toBe(1);
+    expect(rotationSpeedToFanMode(0)).toBe('low');
+    expect(rotationSpeedToFanMode(35)).toBe('medium');
+    expect(rotationSpeedToFanMode(70)).toBe('high');
     expect(rotationSpeedToFanMode(100)).toBe('high');
   });
 
+  it('maps fan rotation speed 0 to WindFree instead of power off', () => {
+    expect(rotationSpeedToFanModeOrWindFree(0)).toBe('windFree');
+    expect(rotationSpeedToFanModeOrWindFree(33)).toBe('low');
+    expect(rotationSpeedToFanModeOrWindFree(34)).toBe('medium');
+    expect(rotationSpeedToFanModeOrWindFree(67)).toBe('high');
+  });
+
   it('uses supported SmartThings fan modes when choosing rotation speed commands', () => {
-    expect(rotationSpeedToFanMode(70, ['auto', 'low', 'mid', 'high'])).toBe('mid');
+    expect(rotationSpeedToFanMode(50, ['auto', 'low', 'mid', 'high'])).toBe('mid');
     expect(rotationSpeedToFanMode(100, ['auto', 'low', 'mid', 'turbo'])).toBe('turbo');
     expect(rotationSpeedToFanMode(35, [])).toBeUndefined();
   });
