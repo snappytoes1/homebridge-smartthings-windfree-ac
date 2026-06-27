@@ -64,6 +64,42 @@ describe('SmartThingsClient command handling', () => {
   });
 });
 
+describe('SmartThingsClient status handling', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  it('coalesces concurrent status requests and caches the result briefly', async () => {
+    const status = {
+      components: {
+        main: {
+          switch: {
+            switch: {
+              value: 'on',
+            },
+          },
+        },
+      },
+    };
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(jsonResponse(status));
+
+    vi.stubGlobal('fetch', fetchMock);
+    const client = createClient();
+
+    const [first, second] = await Promise.all([
+      client.getDeviceStatus('device-1'),
+      client.getDeviceStatus('device-1'),
+    ]);
+    const third = await client.getDeviceStatus('device-1');
+
+    expect(first).toEqual(status);
+    expect(second).toEqual(status);
+    expect(third).toEqual(status);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+});
+
 function createClient(): SmartThingsClient {
   const log = createLogger();
   return new SmartThingsClient('https://api.smartthings.com/v1', new SmartThingsAuth(createConfig(), log), log);

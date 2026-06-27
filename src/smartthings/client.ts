@@ -30,6 +30,9 @@ export class SmartThingsApiError extends Error {
 }
 
 const DEFAULT_MAX_ATTEMPTS = 2;
+const STATUS_CACHE_TTL_MS = 3_000;
+const STATUS_MAX_ATTEMPTS = 4;
+const STATUS_RETRY_DELAY_MS = 1_500;
 const COMMAND_MAX_ATTEMPTS = 4;
 const COMMAND_RETRY_DELAY_MS = 2_500;
 const COMMAND_QUEUE_INTERVAL_MS = 1_200;
@@ -37,8 +40,15 @@ const MIN_RETRY_AFTER_MS = 500;
 const MAX_RETRY_AFTER_MS = 15_000;
 const RETRYABLE_STATUS_CODES = [408, 429, 500, 502, 503, 504] as const;
 
+interface CachedDeviceStatus {
+  expiresAt: number;
+  status: SmartThingsDeviceStatus;
+}
+
 export class SmartThingsClient {
   private readonly commandQueues = new Map<string, Promise<void>>();
+  private readonly statusCache = new Map<string, CachedDeviceStatus>();
+  private readonly statusRequests = new Map<string, Promise<SmartThingsDeviceStatus>>();
 
   public constructor(
     private readonly baseUrl: string,
@@ -53,7 +63,37 @@ export class SmartThingsClient {
   }
 
   public async getDeviceStatus(deviceId: string): Promise<SmartThingsDeviceStatus> {
-    return this.request<SmartThingsDeviceStatus>(`/devices/${encodeURIComponent(deviceId)}/status`, { retry: true });
+    const cached = this.statusCache.get(deviceId);
+    if (cached && Date.now() < cached.expiresAt) {
+      return cached.status;
+    }
+
+    const currentRequest = this.statusRequests.get(deviceId);
+    if (currentRequest) {
+      return currentRequest;
+    }
+
+    const request = this.request<SmartThingsDeviceStatus>(`/devices/${encodeURIComponent(deviceId)}/status`, {
+      retry: true,
+      maxAttempts: STATUS_MAX_ATTEMPTS,
+      retryDelayMs: STATUS_RETRY_DELAY_MS,
+      retryStatusCodes: RETRYABLE_STATUS_CODES,
+    }).then(status => {
+      this.statusCache.set(deviceId, {
+        expiresAt: Date.now() + STATUS_CACHE_TTL_MS,
+        status,
+      });
+      return status;
+    });
+
+    this.statusRequests.set(deviceId, request);
+    void request.finally(() => {
+      if (this.statusRequests.get(deviceId) === request) {
+        this.statusRequests.delete(deviceId);
+      }
+    });
+
+    return request;
   }
 
   public async executeCommand(deviceId: string, command: SmartThingsCommand): Promise<SmartThingsCommandResponse> {
