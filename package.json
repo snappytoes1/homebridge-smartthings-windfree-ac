@@ -1,0 +1,62 @@
+{
+  "displayName": "SmartThings WindFree AC",
+  "name": "homebridge-smartthings-windfree-ac",
+  "version": "0.1.0",
+  "description": "Homebridge dynamic platform plugin for Samsung WindFree air conditioners through the SmartThings API.",
+  "license": "Apache-2.0",
+  "author": "snappytoes1",
+  "homepage": "https://github.com/snappytoes1/homebridge-smartthings-windfree-ac#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/snappytoes1/homebridge-smartthings-windfree-ac.git"
+  },
+  "bugs": {
+    "url": "https://github.com/snappytoes1/homebridge-smartthings-windfree-ac/issues"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "homebridge-ui",
+    "config.schema.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "rimraf dist && tsc --project tsconfig.json",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepare": "npm run build"
+  },
+  "keywords": [
+    "homebridge-plugin",
+    "homebridge",
+    "smartthings",
+    "samsung",
+    "windfree",
+    "air-conditioner",
+    "homekit"
+  ],
+  "peerDependencies": {
+    "homebridge": ">=2.1.0"
+  },
+  "dependencies": {
+    "@homebridge/plugin-ui-utils": "^2.2.4"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.30.0",
+    "@types/node": "^24.0.0",
+    "eslint": "^9.30.0",
+    "globals": "^16.0.0",
+    "homebridge": "^2.1.0",
+    "rimraf": "^6.0.1",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.35.0",
+    "vitest": "^4.1.9"
+  }
+}

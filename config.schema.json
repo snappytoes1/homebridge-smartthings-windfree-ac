@@ -1,0 +1,122 @@
+{
+  "pluginAlias": "SmartThingsWindFreeAC",
+  "pluginType": "platform",
+  "singular": true,
+  "customUi": true,
+  "schema": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "title": "Name",
+        "type": "string",
+        "required": true,
+        "default": "Samsung WindFree AC"
+      },
+      "baseUrl": {
+        "title": "SmartThings API Base URL",
+        "type": "string",
+        "required": true,
+        "default": "https://api.smartthings.com/v1"
+      },
+      "authMethod": {
+        "title": "Authentication Method",
+        "type": "string",
+        "required": true,
+        "default": "oauth2",
+        "oneOf": [
+          { "title": "OAuth2", "enum": ["oauth2"] },
+          { "title": "Personal Access Token", "enum": ["pat"] }
+        ]
+      },
+      "accessToken": {
+        "title": "Personal Access Token",
+        "type": "string",
+        "required": false,
+        "condition": {
+          "functionBody": "return model.authMethod === \"pat\";"
+        }
+      },
+      "clientId": {
+        "title": "Client ID",
+        "type": "string",
+        "required": false,
+        "condition": {
+          "functionBody": "return model.authMethod === \"oauth2\";"
+        }
+      },
+      "clientSecret": {
+        "title": "Client Secret",
+        "type": "string",
+        "required": false,
+        "condition": {
+          "functionBody": "return model.authMethod === \"oauth2\";"
+        }
+      },
+      "redirectUri": {
+        "title": "Redirect URI",
+        "type": "string",
+        "required": false,
+        "default": "https://httpbin.org/get",
+        "condition": {
+          "functionBody": "return model.authMethod === \"oauth2\";"
+        }
+      },
+      "refreshToken": {
+        "title": "Refresh Token",
+        "type": "string",
+        "required": false,
+        "condition": {
+          "functionBody": "return model.authMethod === \"oauth2\";"
+        }
+      },
+      "deviceId": {
+        "title": "SmartThings Device ID",
+        "type": "string",
+        "required": false
+      },
+      "deviceLabel": {
+        "title": "Device Label",
+        "type": "string",
+        "required": false
+      },
+      "exposeWindFree": {
+        "title": "Expose WindFree",
+        "type": "boolean",
+        "required": false,
+        "default": true
+      },
+      "exposeDisplay": {
+        "title": "Expose Display",
+        "type": "boolean",
+        "required": false,
+        "default": true
+      },
+      "exposeAutoClean": {
+        "title": "Expose Auto Clean",
+        "type": "boolean",
+        "required": false,
+        "default": true
+      },
+      "exposeSwing": {
+        "title": "Expose Swing",
+        "type": "boolean",
+        "required": false,
+        "default": true
+      },
+      "exposeFan": {
+        "title": "Expose Fan",
+        "type": "boolean",
+        "required": false,
+        "default": true
+      },
+      "debug": {
+        "title": "Debug Logging",
+        "type": "boolean",
+        "required": false,
+        "default": false
+      }
+    }
+  },
+  "form": null,
+  "display": null
+}

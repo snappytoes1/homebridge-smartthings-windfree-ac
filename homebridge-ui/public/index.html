@@ -1,0 +1,531 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SmartThings WindFree AC</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f6f7f9;
+      --panel: #ffffff;
+      --text: #171b22;
+      --muted: #697282;
+      --line: #d9dee7;
+      --accent: #0070f3;
+      --accent-strong: #0059c8;
+      --ok: #188038;
+      --warn: #b06000;
+      --bad: #b3261e;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #111318;
+        --panel: #1a1d24;
+        --text: #f1f3f7;
+        --muted: #aab2c0;
+        --line: #313642;
+        --accent: #6da7ff;
+        --accent-strong: #9fc4ff;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0;
+    }
+
+    main {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 700;
+    }
+
+    h2 {
+      margin: 0 0 16px;
+      font-size: 18px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
+      gap: 16px;
+    }
+
+    section,
+    .device-list {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 18px;
+    }
+
+    .stack {
+      display: grid;
+      gap: 14px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    input,
+    select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: transparent;
+      color: var(--text);
+      font: inherit;
+      padding: 10px 12px;
+    }
+
+    .segmented,
+    .toggles,
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .segment,
+    button {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--panel);
+      color: var(--text);
+      cursor: pointer;
+      font: inherit;
+      font-weight: 650;
+      min-height: 38px;
+      padding: 8px 12px;
+    }
+
+    .segment[aria-pressed="true"],
+    button.primary {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #fff;
+    }
+
+    button:hover {
+      border-color: var(--accent-strong);
+    }
+
+    .toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 34px;
+      padding: 6px 10px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+    }
+
+    .toggle input {
+      width: auto;
+      margin: 0;
+    }
+
+    .status {
+      min-height: 24px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .status.ok {
+      color: var(--ok);
+    }
+
+    .status.warn {
+      color: var(--warn);
+    }
+
+    .status.bad {
+      color: var(--bad);
+    }
+
+    .device {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .device + .device {
+      margin-top: 10px;
+    }
+
+    .device-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: start;
+      font-weight: 700;
+    }
+
+    .badge {
+      border-radius: 999px;
+      padding: 3px 8px;
+      font-size: 12px;
+      border: 1px solid var(--line);
+      white-space: nowrap;
+    }
+
+    .badge.ok {
+      color: var(--ok);
+      border-color: color-mix(in srgb, var(--ok) 35%, var(--line));
+    }
+
+    .badge.warn {
+      color: var(--warn);
+      border-color: color-mix(in srgb, var(--warn) 35%, var(--line));
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 13px;
+      overflow-wrap: anywhere;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    @media (max-width: 820px) {
+      main {
+        padding: 16px;
+      }
+
+      header,
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1>SmartThings WindFree AC</h1>
+        <div class="muted">SmartThings OAuth2, device discovery, and HomeKit service controls.</div>
+      </div>
+      <button class="primary" id="saveButton" type="button">Save</button>
+    </header>
+
+    <div class="grid">
+      <section class="stack">
+        <h2>Connection</h2>
+
+        <div class="field">
+          <label>Authentication</label>
+          <div class="segmented">
+            <button class="segment" id="oauthButton" type="button" aria-pressed="true">OAuth2</button>
+            <button class="segment" id="patButton" type="button" aria-pressed="false">PAT</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="name">Accessory name</label>
+          <input id="name" autocomplete="off">
+        </div>
+
+        <div class="field">
+          <label for="baseUrl">SmartThings API base URL</label>
+          <input id="baseUrl" autocomplete="off">
+        </div>
+
+        <div id="patFields" class="field hidden">
+          <label for="accessToken">Personal access token</label>
+          <input id="accessToken" type="password" autocomplete="off">
+        </div>
+
+        <div id="oauthFields" class="stack">
+          <div class="field">
+            <label for="clientId">Client ID</label>
+            <input id="clientId" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="clientSecret">Client secret</label>
+            <input id="clientSecret" type="password" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="redirectUri">Redirect URI</label>
+            <input id="redirectUri" autocomplete="off">
+          </div>
+          <div class="actions">
+            <button id="authorizeButton" type="button">Create authorize URL</button>
+          </div>
+          <div class="field hidden" id="authorizeResult">
+            <label for="authorizeUrl">Authorize URL</label>
+            <input id="authorizeUrl" readonly>
+          </div>
+          <div class="field">
+            <label for="authorizationCode">Authorization code or redirect URL</label>
+            <input id="authorizationCode" autocomplete="off">
+          </div>
+          <div class="actions">
+            <button id="exchangeButton" type="button">Exchange code</button>
+          </div>
+          <div class="field">
+            <label for="refreshToken">Refresh token</label>
+            <input id="refreshToken" type="password" autocomplete="off">
+          </div>
+        </div>
+
+        <h2>Device</h2>
+        <div class="field">
+          <label for="deviceId">Device ID</label>
+          <input id="deviceId" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="deviceLabel">Device label</label>
+          <input id="deviceLabel" autocomplete="off">
+        </div>
+
+        <div class="actions">
+          <button id="discoverButton" type="button">Discover devices</button>
+        </div>
+
+        <h2>Services</h2>
+        <div class="toggles">
+          <label class="toggle"><input id="exposeWindFree" type="checkbox">WindFree</label>
+          <label class="toggle"><input id="exposeDisplay" type="checkbox">Display</label>
+          <label class="toggle"><input id="exposeAutoClean" type="checkbox">Auto Clean</label>
+          <label class="toggle"><input id="exposeSwing" type="checkbox">Swing</label>
+          <label class="toggle"><input id="exposeFan" type="checkbox">Fan</label>
+          <label class="toggle"><input id="debug" type="checkbox">Debug</label>
+        </div>
+
+        <div id="status" class="status"></div>
+      </section>
+
+      <aside class="device-list">
+        <h2>Discovered devices</h2>
+        <div id="devices" class="stack">
+          <div class="muted">No discovery results yet.</div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    const defaults = {
+      platform: 'SmartThingsWindFreeAC',
+      name: 'Samsung WindFree AC',
+      baseUrl: 'https://api.smartthings.com/v1',
+      authMethod: 'oauth2',
+      redirectUri: 'https://httpbin.org/get',
+      exposeWindFree: true,
+      exposeDisplay: true,
+      exposeAutoClean: true,
+      exposeSwing: true,
+      exposeFan: true,
+      debug: false,
+    };
+
+    const fields = [
+      'name',
+      'baseUrl',
+      'accessToken',
+      'clientId',
+      'clientSecret',
+      'redirectUri',
+      'refreshToken',
+      'deviceId',
+      'deviceLabel',
+      'exposeWindFree',
+      'exposeDisplay',
+      'exposeAutoClean',
+      'exposeSwing',
+      'exposeFan',
+      'debug',
+    ];
+
+    let config = { ...defaults };
+    let oauthState = '';
+
+    const $ = id => document.getElementById(id);
+
+    async function load() {
+      try {
+        const pluginConfig = await homebridge.getPluginConfig();
+        config = { ...defaults, ...(pluginConfig[0] || {}) };
+        render();
+      } catch (error) {
+        setStatus(error.message || String(error), 'bad');
+      }
+    }
+
+    function render() {
+      for (const field of fields) {
+        const element = $(field);
+        if (!element) {
+          continue;
+        }
+        if (element.type === 'checkbox') {
+          element.checked = Boolean(config[field]);
+        } else {
+          element.value = config[field] || '';
+        }
+      }
+
+      const isOAuth = config.authMethod !== 'pat';
+      $('oauthButton').setAttribute('aria-pressed', String(isOAuth));
+      $('patButton').setAttribute('aria-pressed', String(!isOAuth));
+      $('oauthFields').classList.toggle('hidden', !isOAuth);
+      $('patFields').classList.toggle('hidden', isOAuth);
+    }
+
+    function collect() {
+      const next = { ...defaults, platform: 'SmartThingsWindFreeAC' };
+      for (const field of fields) {
+        const element = $(field);
+        if (!element) {
+          continue;
+        }
+        next[field] = element.type === 'checkbox' ? element.checked : element.value.trim();
+      }
+      next.authMethod = $('patButton').getAttribute('aria-pressed') === 'true' ? 'pat' : 'oauth2';
+      return next;
+    }
+
+    function setAuthMethod(authMethod) {
+      config = collect();
+      config.authMethod = authMethod;
+      render();
+    }
+
+    function setStatus(message, tone = '') {
+      const element = $('status');
+      element.textContent = message;
+      element.className = `status ${tone}`.trim();
+    }
+
+    async function runWithSpinner(action) {
+      try {
+        homebridge.showSpinner();
+        await action();
+      } catch (error) {
+        setStatus(error.message || String(error), 'bad');
+      } finally {
+        homebridge.hideSpinner();
+      }
+    }
+
+    $('oauthButton').addEventListener('click', () => setAuthMethod('oauth2'));
+    $('patButton').addEventListener('click', () => setAuthMethod('pat'));
+
+    $('authorizeButton').addEventListener('click', () => runWithSpinner(async () => {
+      const payload = collect();
+      const result = await homebridge.request('/oauth/start', payload);
+      oauthState = result.state;
+      $('authorizeUrl').value = result.authorizeUrl;
+      $('authorizeResult').classList.remove('hidden');
+      setStatus('Authorize URL created.', 'ok');
+    }));
+
+    $('exchangeButton').addEventListener('click', () => runWithSpinner(async () => {
+      const payload = collect();
+      const input = $('authorizationCode').value.trim();
+      const result = await homebridge.request('/oauth/exchange', {
+        ...payload,
+        state: oauthState,
+        code: input.startsWith('http') ? '' : input,
+        redirectUrl: input.startsWith('http') ? input : '',
+      });
+      $('refreshToken').value = result.refreshToken;
+      config = collect();
+      setStatus('Refresh token saved in the form.', 'ok');
+    }));
+
+    $('discoverButton').addEventListener('click', () => runWithSpinner(async () => {
+      const result = await homebridge.request('/discoverDevices', collect());
+      renderDevices(result.devices || []);
+      setStatus(result.ok ? `Received ${result.devices.length} SmartThings devices.` : result.message, result.ok ? 'ok' : 'bad');
+    }));
+
+    $('saveButton').addEventListener('click', () => runWithSpinner(async () => {
+      config = collect();
+      await homebridge.updatePluginConfig([config]);
+      await homebridge.savePluginConfig();
+      setStatus('Configuration saved.', 'ok');
+    }));
+
+    function renderDevices(devices) {
+      const root = $('devices');
+      root.innerHTML = '';
+      if (!devices.length) {
+        root.innerHTML = '<div class="muted">No devices returned.</div>';
+        return;
+      }
+
+      for (const device of devices) {
+        const element = document.createElement('div');
+        element.className = 'device';
+        element.innerHTML = `
+          <div class="device-title">
+            <span>${escapeHtml(device.label)}</span>
+            <span class="badge ${device.supported ? 'ok' : 'warn'}">${device.supported ? 'Supported' : 'Missing capabilities'}</span>
+          </div>
+          <div class="muted">${escapeHtml(device.deviceId)}</div>
+          <div class="muted">${escapeHtml(device.ocfDeviceType || device.type || 'unknown type')}</div>
+          <div class="muted">${escapeHtml((device.capabilities || []).join(', ') || 'no capabilities')}</div>
+          ${device.supported ? '<button type="button" data-device-id="' + escapeHtml(device.deviceId) + '" data-device-label="' + escapeHtml(device.label) + '">Use this device</button>' : ''}
+        `;
+        root.appendChild(element);
+      }
+
+      root.querySelectorAll('button[data-device-id]').forEach(button => {
+        button.addEventListener('click', () => {
+          $('deviceId').value = button.dataset.deviceId;
+          $('deviceLabel').value = button.dataset.deviceLabel;
+          setStatus('Device selected.', 'ok');
+        });
+      });
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    load();
+  </script>
+</body>
+</html>
