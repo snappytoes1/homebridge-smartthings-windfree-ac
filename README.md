@@ -69,14 +69,16 @@ The exact accessory name comes from the SmartThings device label.
 
 OAuth2 is the preferred setup path.
 
-1. Create a SmartThings OAuth integration in the SmartThings developer console.
-2. Configure the redirect URI in SmartThings and in Homebridge. The default helper value is `https://httpbin.org/get`.
-3. In Homebridge UI, enter `clientId`, `clientSecret`, and `redirectUri`.
-4. Click `Create authorize URL`.
-5. Open the authorize URL, approve access, and copy the returned authorization code or full redirect URL.
-6. Paste it into the Homebridge UI helper.
-7. Click `Exchange code`.
-8. Save the generated `refreshToken` in the plugin config.
+The only one-time preparation is creating an OAuth app in SmartThings. The plugin cannot create this app or hide its client secret because SmartThings issues app credentials to the owner and shows the secret only during app creation. Use the `Create SmartThings OAuth app` link in the Homebridge UI or the [official SmartThings API Access App documentation](https://developer.smartthings.com/docs/service-integrations).
+
+1. Create the SmartThings OAuth app and copy its `clientId` and `clientSecret`.
+2. Add the exact redirect URI `https://httpbin.org/get` to that SmartThings app, or use another redirect URI that you control and enter the same value in Homebridge.
+3. Open the plugin settings, choose `OAuth2`, and enter the client ID, client secret, and redirect URI.
+4. Click `Open SmartThings authorization`. The SmartThings login page opens automatically.
+5. Approve access. When the browser reaches the redirect URI, copy the full address from the browser address bar.
+6. Paste that address into `SmartThings result` and click `Finish OAuth and find devices`.
+7. The plugin exchanges the code, fills the refresh token, verifies access, and displays the devices it can read.
+8. Click `Use this device`, choose optional services, and click `Save`.
 
 Default OAuth scopes requested by the UI helper:
 
@@ -84,7 +86,7 @@ Default OAuth scopes requested by the UI helper:
 r:devices:* w:devices:* x:devices:*
 ```
 
-The plugin exchanges refresh tokens for short-lived access tokens at runtime. If SmartThings rotates the refresh token, the plugin attempts to persist the new value through Homebridge.
+The helper validates the OAuth `state` value and rejects a mismatched or denied redirect result. It uses the current SmartThings OAuth endpoints under `/v1/oauth`. The refresh token is kept in the Homebridge configuration and is used to obtain short-lived access tokens at runtime. If SmartThings rotates the refresh token, the plugin attempts to persist the new value through Homebridge.
 
 ## PAT Setup
 

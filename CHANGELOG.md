@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 This project uses npm package versions and GitHub release tags.
 
+## Unreleased
+
+- Added a guided Homebridge OAuth2 setup flow that opens SmartThings authorization, copies the link, completes code exchange, and discovers devices automatically.
+- Updated OAuth requests to SmartThings' current `/v1/oauth` endpoints and token parameters.
+- Added strict redirect-result and OAuth state validation, denied-access handling, and serialized refresh-token requests.
+
 ## 0.1.0-beta.1 - 2026-06-27
 
 - Initial clean Homebridge dynamic platform plugin for SmartThings WindFree AC devices.

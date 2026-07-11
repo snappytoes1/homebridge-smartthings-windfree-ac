@@ -116,6 +116,19 @@
       gap: 8px;
     }
 
+    .button-link {
+      display: inline-flex;
+      align-items: center;
+      min-height: 38px;
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      color: var(--accent-strong);
+      font: inherit;
+      font-weight: 650;
+      text-decoration: none;
+    }
+
     .segment,
     button {
       border: 1px solid var(--line);
@@ -272,6 +285,10 @@
         </div>
 
         <div id="oauthFields" class="stack">
+          <div class="muted">Connect SmartThings once, then use discovery to select your air conditioner.</div>
+          <div class="actions">
+            <a class="button-link" href="https://developer.smartthings.com/docs/service-integrations" target="_blank" rel="noopener noreferrer">Create SmartThings OAuth app</a>
+          </div>
           <div class="field">
             <label for="clientId">Client ID</label>
             <input id="clientId" autocomplete="off">
@@ -285,18 +302,20 @@
             <input id="redirectUri" autocomplete="off">
           </div>
           <div class="actions">
-            <button id="authorizeButton" type="button">Create authorize URL</button>
+            <button id="authorizeButton" type="button">Open SmartThings authorization</button>
+            <button id="copyAuthorizeButton" type="button" class="hidden">Copy authorization link</button>
           </div>
           <div class="field hidden" id="authorizeResult">
             <label for="authorizeUrl">Authorize URL</label>
             <input id="authorizeUrl" readonly>
           </div>
           <div class="field">
-            <label for="authorizationCode">Authorization code or redirect URL</label>
+            <label for="authorizationCode">SmartThings result</label>
             <input id="authorizationCode" autocomplete="off">
+            <div class="muted">After approval, paste the full browser address here. A code also works.</div>
           </div>
           <div class="actions">
-            <button id="exchangeButton" type="button">Exchange code</button>
+            <button id="exchangeButton" class="primary" type="button">Finish OAuth and find devices</button>
           </div>
           <div class="field">
             <label for="refreshToken">Refresh token</label>
@@ -453,7 +472,14 @@
       oauthState = result.state;
       $('authorizeUrl').value = result.authorizeUrl;
       $('authorizeResult').classList.remove('hidden');
-      setStatus('Authorize URL created.', 'ok');
+      $('copyAuthorizeButton').classList.remove('hidden');
+      window.open(result.authorizeUrl, '_blank', 'noopener,noreferrer');
+      setStatus('SmartThings authorization opened. Approve access, then paste the returned browser address below.', 'ok');
+    }));
+
+    $('copyAuthorizeButton').addEventListener('click', () => runWithSpinner(async () => {
+      await copyText($('authorizeUrl').value);
+      setStatus('Authorization link copied.', 'ok');
     }));
 
     $('exchangeButton').addEventListener('click', () => runWithSpinner(async () => {
@@ -467,14 +493,18 @@
       });
       $('refreshToken').value = result.refreshToken;
       config = collect();
-      setStatus('Refresh token saved in the form.', 'ok');
+      oauthState = '';
+      setStatus('OAuth completed. Checking access and finding devices...', 'ok');
+      await discoverDevices();
     }));
 
-    $('discoverButton').addEventListener('click', () => runWithSpinner(async () => {
+    $('discoverButton').addEventListener('click', () => runWithSpinner(discoverDevices));
+
+    async function discoverDevices() {
       const result = await homebridge.request('/discoverDevices', collect());
       renderDevices(result.devices || []);
       setStatus(result.ok ? `Received ${result.devices.length} SmartThings devices.` : result.message, result.ok ? 'ok' : 'bad');
-    }));
+    }
 
     $('saveButton').addEventListener('click', () => runWithSpinner(async () => {
       config = collect();
@@ -523,6 +553,22 @@
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
+    }
+
+    async function copyText(value) {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(value);
+        return;
+      }
+
+      const input = document.createElement('textarea');
+      input.value = value;
+      input.style.position = 'fixed';
+      input.style.opacity = '0';
+      document.body.appendChild(input);
+      input.select();
+      document.execCommand('copy');
+      input.remove();
     }
 
     load();

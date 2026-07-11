@@ -18,6 +18,7 @@ export type TokenRefreshHandler = (refreshToken: string) => Promise<void> | void
 export class SmartThingsAuth {
   private accessToken?: string;
   private expiresAt = 0;
+  private refreshRequest?: Promise<string>;
   private readonly onRefreshToken: TokenRefreshHandler | undefined;
 
   public constructor(
@@ -40,7 +41,13 @@ export class SmartThingsAuth {
       return this.accessToken;
     }
 
-    return this.refreshAccessToken();
+    this.refreshRequest ??= this.refreshAccessToken();
+
+    try {
+      return await this.refreshRequest;
+    } finally {
+      this.refreshRequest = undefined;
+    }
   }
 
   private async refreshAccessToken(): Promise<string> {
@@ -51,12 +58,15 @@ export class SmartThingsAuth {
     const body = new URLSearchParams({
       grant_type: 'refresh_token',
       refresh_token: this.config.refreshToken,
+      client_id: this.config.clientId,
     });
 
     const response = await fetch(`${SMARTTHINGS_AUTH_BASE_URL}/token`, {
       method: 'POST',
+      signal: AbortSignal.timeout(10_000),
       headers: {
         Authorization: `Basic ${basicAuth(this.config.clientId, this.config.clientSecret)}`,
+        Accept: 'application/json',
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body,

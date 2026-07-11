@@ -64,7 +64,19 @@ export function parseAuthorizationCode(input: Pick<OAuthExchangeRequest, 'code' 
   }
 
   const redirectUrl = readRequiredString(input.redirectUrl, 'redirectUrl or code');
-  const parsed = new URL(redirectUrl);
+  let parsed: URL;
+  try {
+    parsed = new URL(redirectUrl);
+  } catch {
+    throw new Error('The authorization result must be a valid redirect URL or authorization code.');
+  }
+
+  const error = parsed.searchParams.get('error');
+  if (error) {
+    const description = parsed.searchParams.get('error_description');
+    throw new Error(`SmartThings authorization was not completed: ${description ?? error}`);
+  }
+
   const code = parsed.searchParams.get('code');
   if (!code) {
     throw new Error('Authorization redirect URL does not contain a code parameter.');
@@ -87,7 +99,12 @@ export function validateOAuthExchangeRequest(request: OAuthExchangeRequest, pend
   const clientSecret = readRequiredString(request.clientSecret, 'clientSecret');
   const redirectUri = readOptionalString(request.redirectUri) ?? DEFAULT_REDIRECT_URI;
   const parsedCode = parseAuthorizationCode(request);
-  const state = readOptionalString(request.state) ?? parsedCode.state;
+  const requestedState = readOptionalString(request.state);
+  if (requestedState && parsedCode.state && requestedState !== parsedCode.state) {
+    throw new Error('OAuth state is missing, expired, or invalid.');
+  }
+
+  const state = requestedState ?? parsedCode.state;
 
   if (!state || !STATE_PATTERN.test(state) || !pendingStates.has(state)) {
     throw new Error('OAuth state is missing, expired, or invalid.');
@@ -112,13 +129,16 @@ export async function exchangeAuthorizationCode(
   const body = new URLSearchParams({
     grant_type: 'authorization_code',
     code: validated.code,
+    client_id: validated.clientId,
     redirect_uri: validated.redirectUri,
   });
 
   const response = await fetch(`${SMARTTHINGS_AUTH_BASE_URL}/token`, {
     method: 'POST',
+    signal: AbortSignal.timeout(10_000),
     headers: {
       Authorization: `Basic ${basicAuth(validated.clientId, validated.clientSecret)}`,
+      Accept: 'application/json',
       'Content-Type': 'application/x-www-form-urlencoded',
     },
     body,
