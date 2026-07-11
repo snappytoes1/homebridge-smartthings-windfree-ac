@@ -71,7 +71,7 @@ The exact accessory name comes from the SmartThings device label.
 
 OAuth2 is the preferred setup path.
 
-The only one-time preparation is creating an OAuth app in SmartThings. The plugin cannot create this app or hide its client secret because SmartThings issues app credentials to the owner and shows the secret only during app creation. Use the `Create SmartThings OAuth app` link in the Homebridge UI or the [official SmartThings API Access App documentation](https://developer.smartthings.com/docs/service-integrations).
+The only one-time preparation is creating an OAuth app in SmartThings. The plugin cannot create this app or hide its client secret because SmartThings issues app credentials to the owner and shows the secret only during app creation. Use the `Create SmartThings OAuth app` link in the Homebridge UI or the [official SmartThings OAuth documentation](https://developer.smartthings.com/docs/service-integrations/oauth).
 
 1. Click `Open SmartThings setup guide` in the plugin UI.
 2. Create the SmartThings OAuth app and copy its `clientId` and `clientSecret`.
