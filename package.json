@@ -64,14 +64,14 @@
     "@homebridge/plugin-ui-utils": "^2.2.4"
   },
   "devDependencies": {
-    "@eslint/js": "^9.30.0",
-    "@types/node": "^24.0.0",
-    "eslint": "^9.30.0",
-    "globals": "^16.0.0",
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.1.1",
+    "eslint": "^10.7.0",
+    "globals": "^17.7.0",
     "homebridge": "^2.1.0",
     "rimraf": "^6.0.1",
-    "typescript": "^6.0.3",
-    "typescript-eslint": "^8.35.0",
-    "vitest": "^4.1.9"
+    "typescript": "^7.0.2",
+    "typescript-eslint": "^8.63.0",
+    "vitest": "^4.1.10"
   }
 }
