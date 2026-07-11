@@ -9,7 +9,7 @@ This project uses npm package versions and GitHub release tags.
 - Added a guided Homebridge OAuth2 setup flow that opens SmartThings authorization, copies the link, completes code exchange, and discovers devices automatically.
 - Updated OAuth requests to SmartThings' current `/v1/oauth` endpoints and token parameters.
 - Added strict redirect-result and OAuth state validation, denied-access handling, and serialized refresh-token requests.
-- Made direct GitHub installs independent of npm devDependency installation by shipping the compiled runtime and using a Node-only build/prepare path.
+- Made direct GitHub installs independent of npm devDependency installation by shipping the compiled runtime and moving builds to the npm pack/release path.
 - Reworked the OAuth UI into a four-step setup guide with direct documentation access and Redirect URI copy support.
 
 ## 0.1.0-beta.1 - 2026-06-27
