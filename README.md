@@ -45,6 +45,8 @@ npm install -g "git+https://github.com/snappytoes1/homebridge-smartthings-windfr
 
 The repository includes the compiled `dist` runtime so GitHub installs do not need development dependencies. Local development and npm packaging rebuild `dist` through `npm run build`.
 
+Homebridge is provided by the host installation and is intentionally not downloaded again as a plugin dependency.
+
 ## Quick Setup
 
 1. Install the plugin in Homebridge.

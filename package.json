@@ -55,6 +55,11 @@
   "peerDependencies": {
     "homebridge": ">=2.1.0"
   },
+  "peerDependenciesMeta": {
+    "homebridge": {
+      "optional": true
+    }
+  },
   "dependencies": {
     "@homebridge/plugin-ui-utils": "^2.2.4"
   },

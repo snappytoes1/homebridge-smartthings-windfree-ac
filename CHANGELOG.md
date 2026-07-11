@@ -11,6 +11,7 @@ This project uses npm package versions and GitHub release tags.
 - Added strict redirect-result and OAuth state validation, denied-access handling, and serialized refresh-token requests.
 - Made direct GitHub installs independent of npm devDependency installation by shipping the compiled runtime and moving builds to the npm pack/release path.
 - Reworked the OAuth UI into a four-step setup guide with direct documentation access and Redirect URI copy support.
+- Prevented npm from downloading a second Homebridge installation during GitHub plugin installs.
 
 ## 0.1.0-beta.1 - 2026-06-27
 
