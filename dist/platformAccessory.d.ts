@@ -1,0 +1,37 @@
+import type { PlatformAccessory } from 'homebridge';
+import type { SmartThingsClient } from './smartthings/client.js';
+import type { SmartThingsWindFreePlatform } from './platform.js';
+export declare class SmartThingsWindFreeAccessory {
+    private readonly platform;
+    private readonly accessory;
+    private readonly client;
+    private readonly capabilities;
+    private readonly device;
+    private lastStatus?;
+    private readonly thermostatService;
+    private windFreeFanControlEnabled;
+    constructor(platform: SmartThingsWindFreePlatform, accessory: PlatformAccessory, client: SmartThingsClient, capabilities: string[]);
+    private configureThermostat;
+    private configureOptionalServices;
+    private syncSwitchService;
+    private removeSwitchService;
+    private syncFanService;
+    private handleCurrentHeatingCoolingStateGet;
+    private handleTargetHeatingCoolingStateGet;
+    private handleTargetHeatingCoolingStateSet;
+    private handleCurrentTemperatureGet;
+    private handleTargetTemperatureGet;
+    private handleTargetTemperatureSet;
+    private handleDisplayGet;
+    private handleDisplaySet;
+    private handleAutoCleanGet;
+    private handleAutoCleanSet;
+    private handleSwingGet;
+    private handleSwingSet;
+    private handleFanActiveGet;
+    private handleFanActiveSet;
+    private handleFanRotationSpeedGet;
+    private handleFanRotationSpeedSet;
+    private getDeviceStatus;
+    private executeSafely;
+}

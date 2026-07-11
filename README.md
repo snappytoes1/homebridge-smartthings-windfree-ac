@@ -40,10 +40,10 @@ npm install -g homebridge-smartthings-windfree-ac
 Install from GitHub `main` before npm publish:
 
 ```bash
-npm install -g github:snappytoes1/homebridge-smartthings-windfree-ac#main
+npm install -g "git+https://github.com/snappytoes1/homebridge-smartthings-windfree-ac.git#main"
 ```
 
-GitHub installs build `dist` through the package `prepare` script.
+The repository includes the compiled `dist` runtime so GitHub installs work even when npm omits development dependencies. Local development still rebuilds `dist` through `npm run build`.
 
 ## Quick Setup
 

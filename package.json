@@ -35,13 +35,13 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "rimraf dist && tsc --project tsconfig.json",
+    "build": "node scripts/build.cjs",
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",
     "pack:dry-run": "npm pack --dry-run",
     "verify": "npm run lint && npm run build && npm test && npm run pack:dry-run",
-    "prepare": "npm run build"
+    "prepare": "node scripts/prepare.cjs"
   },
   "keywords": [
     "homebridge-plugin",
