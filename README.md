@@ -71,13 +71,13 @@ OAuth2 is the preferred setup path.
 
 The only one-time preparation is creating an OAuth app in SmartThings. The plugin cannot create this app or hide its client secret because SmartThings issues app credentials to the owner and shows the secret only during app creation. Use the `Create SmartThings OAuth app` link in the Homebridge UI or the [official SmartThings API Access App documentation](https://developer.smartthings.com/docs/service-integrations).
 
-1. Create the SmartThings OAuth app and copy its `clientId` and `clientSecret`.
-2. Add the exact redirect URI `https://httpbin.org/get` to that SmartThings app, or use another redirect URI that you control and enter the same value in Homebridge.
-3. Open the plugin settings, choose `OAuth2`, and enter the client ID, client secret, and redirect URI.
-4. Click `Open SmartThings authorization`. The SmartThings login page opens automatically.
+1. Click `Open SmartThings setup guide` in the plugin UI.
+2. Create the SmartThings OAuth app and copy its `clientId` and `clientSecret`.
+3. Register the exact Redirect URI shown by the plugin. The default is `https://httpbin.org/get`; the UI can copy it for you.
+4. Enter the client ID and client secret, then click `Open SmartThings authorization`.
 5. Approve access. When the browser reaches the redirect URI, copy the full address from the browser address bar.
-6. Paste that address into `SmartThings result` and click `Finish OAuth and find devices`.
-7. The plugin exchanges the code, fills the refresh token, verifies access, and displays the devices it can read.
+6. Paste that address into `SmartThings result` and click `Finish connection and find devices`.
+7. The plugin exchanges the code, verifies access, and displays the devices it can read.
 8. Click `Use this device`, choose optional services, and click `Save`.
 
 Default OAuth scopes requested by the UI helper:

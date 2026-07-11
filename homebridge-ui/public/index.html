@@ -129,6 +129,51 @@
       text-decoration: none;
     }
 
+    .setup-guide {
+      display: grid;
+      gap: 12px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: color-mix(in srgb, var(--accent) 7%, var(--panel));
+    }
+
+    .setup-step {
+      display: grid;
+      grid-template-columns: 28px minmax(0, 1fr);
+      gap: 10px;
+      align-items: start;
+    }
+
+    .step-number {
+      display: grid;
+      place-items: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 750;
+    }
+
+    .step-content {
+      display: grid;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .step-title {
+      font-weight: 700;
+    }
+
+    .copy-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: center;
+    }
+
     .segment,
     button {
       border: 1px solid var(--line);
@@ -285,41 +330,74 @@
         </div>
 
         <div id="oauthFields" class="stack">
-          <div class="muted">Connect SmartThings once, then use discovery to select your air conditioner.</div>
-          <div class="actions">
-            <a class="button-link" href="https://developer.smartthings.com/docs/service-integrations" target="_blank" rel="noopener noreferrer">Create SmartThings OAuth app</a>
-          </div>
-          <div class="field">
-            <label for="clientId">Client ID</label>
-            <input id="clientId" autocomplete="off">
-          </div>
-          <div class="field">
-            <label for="clientSecret">Client secret</label>
-            <input id="clientSecret" type="password" autocomplete="off">
-          </div>
-          <div class="field">
-            <label for="redirectUri">Redirect URI</label>
-            <input id="redirectUri" autocomplete="off">
-          </div>
-          <div class="actions">
-            <button id="authorizeButton" type="button">Open SmartThings authorization</button>
-            <button id="copyAuthorizeButton" type="button" class="hidden">Copy authorization link</button>
-          </div>
-          <div class="field hidden" id="authorizeResult">
-            <label for="authorizeUrl">Authorize URL</label>
-            <input id="authorizeUrl" readonly>
-          </div>
-          <div class="field">
-            <label for="authorizationCode">SmartThings result</label>
-            <input id="authorizationCode" autocomplete="off">
-            <div class="muted">After approval, paste the full browser address here. A code also works.</div>
-          </div>
-          <div class="actions">
-            <button id="exchangeButton" class="primary" type="button">Finish OAuth and find devices</button>
-          </div>
-          <div class="field">
-            <label for="refreshToken">Refresh token</label>
-            <input id="refreshToken" type="password" autocomplete="off">
+          <div class="setup-guide">
+            <div class="setup-step">
+              <span class="step-number">1</span>
+              <div class="step-content">
+                <div class="step-title">Create a SmartThings OAuth app</div>
+                <div class="muted">Client ID and Client secret come from SmartThings Developer Center. They are not your Samsung login.</div>
+                <div class="actions">
+                  <a class="button-link" href="https://developer.smartthings.com/docs/service-integrations" target="_blank" rel="noopener noreferrer">Open SmartThings setup guide</a>
+                </div>
+              </div>
+            </div>
+
+            <div class="setup-step">
+              <span class="step-number">2</span>
+              <div class="step-content">
+                <div class="step-title">Enter the app credentials</div>
+                <div class="field">
+                  <label for="clientId">Client ID</label>
+                  <input id="clientId" autocomplete="off">
+                </div>
+                <div class="field">
+                  <label for="clientSecret">Client secret</label>
+                  <input id="clientSecret" type="password" autocomplete="off">
+                </div>
+                <div class="field">
+                  <label for="redirectUri">Redirect URI</label>
+                  <div class="copy-row">
+                    <input id="redirectUri" autocomplete="off">
+                    <button id="copyRedirectButton" type="button">Copy</button>
+                  </div>
+                  <div class="muted">Register this exact address in the SmartThings OAuth app. The default is ready to use.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="setup-step">
+              <span class="step-number">3</span>
+              <div class="step-content">
+                <div class="step-title">Connect your Samsung account</div>
+                <div class="muted">Open SmartThings, approve access, then return here.</div>
+                <div class="actions">
+                  <button id="authorizeButton" class="primary" type="button">Open SmartThings authorization</button>
+                  <button id="copyAuthorizeButton" type="button" class="hidden">Copy authorization link</button>
+                </div>
+                <div class="field hidden" id="authorizeResult">
+                  <label for="authorizeUrl">Authorization link</label>
+                  <input id="authorizeUrl" readonly>
+                </div>
+                <div class="field">
+                  <label for="authorizationCode">SmartThings result</label>
+                  <input id="authorizationCode" autocomplete="off">
+                  <div class="muted">Copy the full browser address after SmartThings redirects you, then paste it here.</div>
+                </div>
+                <button id="exchangeButton" class="primary" type="button">Finish connection and find devices</button>
+              </div>
+            </div>
+
+            <div class="setup-step">
+              <span class="step-number">4</span>
+              <div class="step-content">
+                <div class="step-title">Choose your air conditioner and save</div>
+                <div class="muted">The plugin will test access and show supported devices below.</div>
+                <div class="field">
+                  <label for="refreshToken">Refresh token</label>
+                  <input id="refreshToken" type="password" autocomplete="off">
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -465,6 +543,11 @@
 
     $('oauthButton').addEventListener('click', () => setAuthMethod('oauth2'));
     $('patButton').addEventListener('click', () => setAuthMethod('pat'));
+
+    $('copyRedirectButton').addEventListener('click', () => runWithSpinner(async () => {
+      await copyText($('redirectUri').value);
+      setStatus('Redirect URI copied. Add this exact value to the SmartThings OAuth app.', 'ok');
+    }));
 
     $('authorizeButton').addEventListener('click', () => runWithSpinner(async () => {
       const payload = collect();
